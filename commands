@@ -1,0 +1,44 @@
+git config --local user.name "Стёпа Юрченко"
+git config --local user.email "stepanpashtet@gmail.com"
+
+
+docker network create my_network
+
+docker run --name sales_platform_db \
+    -p 6432:5432 \
+    -e POSTGRES_USER=abcde \
+    -e POSTGRES_PASSWORD=abcde \
+    -e POSTGRES_DB=sales_platform \
+    --network=my_network \
+    --volume pg_data_sales:/var/lib/postgresql/data \
+    -d postgres:16
+
+
+docker run --name sales_platform_cache \
+    -p 7379:6379 \
+    --network=my_network \
+    -d redis:7.4
+
+
+docker run --name sales_platform_back \
+    -p 7777:8000 \
+    --network=my_network \
+    sales_platform_image
+
+
+docker run --name sales_platform_worker \
+    --network=my_network \
+    booking_image \
+    celery --app=src.tasks.celery_app:celery_instance worker -l INFO
+
+
+
+docker build -t booking_image .
+
+
+docker run --name sales_platform_nginx \
+  --volume ./nginx.conf:/etc/nginx/nginx.conf \
+  --volume /etc/letsencrypt:/etc/letsencrypt \
+  --volume /var/lib/letsencrypt:/var/lib/letsencrypt \
+  --network my_network \
+  --rm -p 80:80 -p 443:443 nginx
