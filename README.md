@@ -163,17 +163,7 @@ docker compose up --build -d
 
 ### 4. Миграции БД
 
-После первого запуска контейнеров примени миграции **с хоста** (Postgres проброшен на порт `6432`):
-
-```bash
-# в .env для alembic с хоста:
-# DB_HOST=localhost
-# DB_PORT=6432
-
-alembic upgrade head
-```
-
-Либо из контейнера API:
+После первого запуска контейнеров примени миграции из контейнера API:
 
 ```bash
 docker compose exec car_sale_back_service alembic upgrade head
@@ -184,8 +174,8 @@ docker compose exec car_sale_back_service alembic upgrade head
 | Сервис | Адрес |
 |--------|--------|
 | API (Swagger) | http://<IP-сервера>:7777/docs |
-| PostgreSQL (с хоста) | `localhost:6432` |
-| Redis (с хоста) | `localhost:6666` |
+| PostgreSQL | Только внутри Docker-сети (`5432`) |
+| Redis | Только внутри Docker-сети (`6379`) |
 
 ### 6. Остановка
 
@@ -206,17 +196,14 @@ docker compose down -v
 | Сервис | Контейнер | Образ / сборка | Порт (host:container) |
 |--------|-----------|----------------|------------------------|
 | API | `car_sale_back` | `build: .` | `7777:8000` |
-| PostgreSQL | — | `postgres:16` | `6432:5432` |
-| Redis | `car_sale_cache` | `redis:7` | `6666:6379` |
+| PostgreSQL | — | `postgres:16` | Только внутренний `5432` |
+| Redis | `car_sale_cache` | `redis:7` | Только внутренний `6379` |
 | Celery worker | `car_sale_celery_worker` | `build: .` | — |
 
 **Важно:** значения `POSTGRES_*` в `docker-compose.yml` должны совпадать с `DB_*` в `.env`.
 
-Текущие значения в compose:
-
-- `POSTGRES_USER=postgres`
-- `POSTGRES_PASSWORD=postgres`
-- `POSTGRES_DB=sales_platform`
+Compose получает `POSTGRES_USER`, `POSTGRES_PASSWORD` и `POSTGRES_DB` из
+`DB_USER`, `DB_PASS` и `DB_NAME` в `.env`.
 
 ---
 
@@ -272,8 +259,8 @@ SMTP_PASS=your_app_password
 MAIL_FROM=your_email@list.ru
 ```
 
-> **Примечание:** `DB_PORT=5432` и `REDIS_PORT=6379` — это **внутренние** порты в docker-сети.  
-> Порты `6432` и `6666` используются только при подключении **с хоста** (например, для `alembic` или DBeaver).
+> **Примечание:** `DB_PORT=5432` и `REDIS_PORT=6379` — внутренние порты
+> Docker-сети. PostgreSQL и Redis намеренно не публикуются наружу.
 
 ---
 
