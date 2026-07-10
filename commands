@@ -7,7 +7,7 @@ docker network create my_network
 docker run --name sales_platform_db \
     -p 6432:5432 \
     -e POSTGRES_USER=abcde \
-    -e POSTGRES_PASSWORD=abcde \
+    -e POSTGRES_PASSWORD=my_own_car_pass \
     -e POSTGRES_DB=sales_platform \
     --network=my_network \
     --volume pg_data_sales:/var/lib/postgresql/data \
