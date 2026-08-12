@@ -16,6 +16,7 @@ import src.loggers.logger # noqa: F401
 from src.api.cars import router as router_cars
 from src.api.auth import router as router_auth
 from src.api.favorites import router as router_favorites
+from src.api.vrc import router as router_vrc
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(router_auth)
 app.include_router(router_cars)
 app.include_router(router_favorites)
+app.include_router(router_vrc)
 
 
 if __name__ == "__main__":

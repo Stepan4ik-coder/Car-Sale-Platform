@@ -33,6 +33,7 @@ nodeenv==1.10.0
 packaging==26.2
 passlib==1.7.4
 pendulum==3.2.0
+pillow==12.3.0
 pluggy==1.6.0
 prompt_toolkit==3.0.52
 pwdlib==0.3.0
@@ -43,11 +44,13 @@ pydantic_core==2.46.4
 Pygments==2.20.0
 PyJWT==2.13.0
 pyright==1.1.411
+pytesseract==0.3.13
 pytest==9.1.1
 pytest-asyncio==1.4.0
 pytest-dotenv==0.5.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
+python-multipart==0.0.32
 redis==8.0.0
 ruff==0.15.20
 six==1.17.0

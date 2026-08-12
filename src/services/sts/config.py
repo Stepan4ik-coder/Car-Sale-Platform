@@ -1,0 +1,1 @@
+NEEDED_FORMATS = {"JPEG", "PNG", "WEBP"}

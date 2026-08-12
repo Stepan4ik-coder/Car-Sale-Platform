@@ -2,10 +2,10 @@ from fastapi import HTTPException
 
 
 class CarSalesPlatformException(Exception):
-    def __init__(self, *args, **kwargs):
-        detail = "Неожиданная ошибка"
+    detail = "Неожиданная ошибка"
 
-        super().__init__(*args, detail, **kwargs)
+    def __init__(self):
+        super().__init__(self.detail)
 
 
 class ObjectNotFoundException(CarSalesPlatformException):
@@ -19,6 +19,13 @@ class ObjectAlreadyExistsException(CarSalesPlatformException):
 class IncorrectValuesException(CarSalesPlatformException):
     detail = "Неверные данные"
 
+
+class IncorrectCreationException(CarSalesPlatformException):
+    detail = "Ошибка при создании объекта"
+
+
+class IncorrectStsStringException(CarSalesPlatformException):
+    detail = "Невалидные данные СТС"
 
 
 # HTTPException
@@ -58,3 +65,18 @@ class FavoriteAlreadyExistsHTTPException(CarSalesPlatformHTTPException):
 class FavoriteNotFoundHTTPException(CarSalesPlatformHTTPException):
     status_code = 404
     detail = "Автомобиль в избранном не найден"
+
+
+class StsFormatIsNotCorrectHTTPException(CarSalesPlatformHTTPException):
+    status_code = 415
+    detail = "Неподдерживаемый формат изображения"
+
+
+class StsImageIsDamagedHTTPException(CarSalesPlatformHTTPException):
+    status_code = 415
+    detail = "Фото повреждено"
+
+
+class StsImageIsNotRecognizedHTTPException(CarSalesPlatformHTTPException):
+    status_code = 422
+    detail = "VIN-номер не распознан"
