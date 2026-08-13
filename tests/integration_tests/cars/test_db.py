@@ -5,6 +5,7 @@ from src.schemas.cars import CarCreate
 async def test_car_crud(db):
     # Добавление авто
     car_data = CarCreate(
+        vin="JA3BB51E9JU024751",
         engine_type="gasoline",
         litres=3,
         horse_power=255,
@@ -33,6 +34,7 @@ async def test_car_crud(db):
     update_color = "black"
     update_price =400000
     update_car_data = CarCreate(
+        vin="JA3BB51E9JU024751",
         engine_type="gasoline",
         litres=update_litres,
         horse_power=255,

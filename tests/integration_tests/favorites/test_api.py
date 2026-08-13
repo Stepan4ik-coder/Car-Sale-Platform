@@ -21,6 +21,7 @@ async def test_get_all_fav_cars(auth_client):
 
 async def test_add_new_fav_cars(db: DBManager, auth_client):
     car = await db.cars.add(CarCreate(
+        vin="1FA6P8CF0H5194382",
         engine_type="gasoline",
         litres=3,
         horse_power=255,

@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 
 class CarCreate(BaseModel):
+    vin: str = Field(pattern=r"^[A-HJ-NPR-Z0-9]{17}$")
     engine_type: Literal["gasoline", "diesel", "electric", "hybrid"]
     litres: int = Field(ge=1, le=10)  # объём в литрах
     horse_power: int = Field(gt=0, le=2000)
@@ -14,6 +15,10 @@ class CarCreate(BaseModel):
 
 
 class CarPatch(BaseModel):
+    vin: str | None = Field(
+        default=None,
+        pattern=r"^[A-HJ-NPR-Z0-9]{17}$"
+    )
     engine_type: Literal["gasoline", "diesel", "electric", "hybrid"] | None = None
     litres: int | None = Field(default=None, ge=1, le=10)
     horse_power: int | None = Field(default=None, gt=0, le=2000)
