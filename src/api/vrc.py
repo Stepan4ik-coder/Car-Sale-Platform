@@ -3,8 +3,10 @@ import os
 import tempfile
 
 from src.services.sts.ocr import recognize_vin
+from src.services.vehicle_lookup import autofill_example
 from src.exceptions import IncorrectStsStringException, StsImageIsNotRecognizedHTTPException
-from src.schemas.vrc import VrcRecognizeResponse
+from src.schemas.vrc import VrcRecognizeResponse, CarVinRequest
+from src.schemas.cars import CarAutofillResponse
 
 router = APIRouter(prefix="/vrc", tags=["Действия со свидетельством о регистрации ТС (СТС)"])
 
@@ -29,5 +31,12 @@ async def recognize_vrc(
     finally:
         if os.path.exists(cur_path):
             os.remove(cur_path)
+
+
+@router.post("/autofill", response_model=CarAutofillResponse)
+def example_to_autofill(data: CarVinRequest):
+    data_to_autofill = autofill_example(data.vin)
+
+    return data_to_autofill
 
 

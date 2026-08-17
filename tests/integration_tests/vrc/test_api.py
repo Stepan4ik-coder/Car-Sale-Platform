@@ -1,6 +1,7 @@
 from src.api import vrc
 from src.exceptions import StsImageIsDamagedHTTPException, \
     StsImageIsNotRecognizedHTTPException
+from src.schemas.vrc import CarVinRequest
 
 
 async def test_recognize_vrc(
@@ -80,3 +81,22 @@ async def test_damaged_image(
 
     assert response.status_code == 415
     assert response.json() == {"detail": "Фото повреждено"}
+
+
+async def test_autofill(ac):
+    data_to_autofill = CarVinRequest(vin="JA3BB51E9JU024751")
+
+    response = await ac.post("/vrc/autofill", json=data_to_autofill.model_dump())
+
+    assert response.status_code == 200
+    assert response.json()["vin"] == "JA3BB51E9JU024751"
+    assert response.json()["engine_type"] == "diesel"
+    assert response.json()["year"] == 1996
+
+
+async def test_incorrect_autofill(ac):
+    data_to_autofill = {"vin": "1"}
+
+    response = await ac.post("/vrc/autofill", json=data_to_autofill)
+
+    assert response.status_code == 422
