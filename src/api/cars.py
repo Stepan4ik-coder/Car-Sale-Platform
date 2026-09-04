@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from fastapi_cache.decorator import cache
 
-from src.api.dependencies import DBDep
-from src.exceptions import CarNotFoundHTTPException
+from src.api.dependencies import DBDep, UserIdDep
+from src.exceptions import CarNotFoundHTTPException, CarPermissionHTTPException
 from src.schemas.cars import CarCreate, CarPut, CarPatch
 from src.services.send_notifications import check_car_price, check_car_status
 from src.tasks.tasks_for_celery import send_notifications
@@ -29,7 +29,10 @@ async def get_cars(
 
 
 @router.get("/{car_id}")
-async def get_one_car(db: DBDep, car_id: int):
+async def get_one_car(
+        db: DBDep,
+        car_id: int
+):
     car = await db.cars.get_one_or_none(car_id)
     if car is None:
         raise CarNotFoundHTTPException()
@@ -38,18 +41,30 @@ async def get_one_car(db: DBDep, car_id: int):
 
 
 @router.post("")
-async def add(db: DBDep, data: CarCreate):
-    car = await db.cars.add(data)
+async def add(
+        db: DBDep,
+        data: CarCreate,
+        owner_id: UserIdDep
+):
+    car = await db.cars.add(data, owner_id=owner_id)
     await db.commit()
 
     return car
 
 
 @router.put("/{car_id}")
-async def put_update(db: DBDep, data: CarPut, car_id: int):
+async def put_update(
+        db: DBDep,
+        data: CarPut,
+        car_id: int,
+        owner_id: UserIdDep
+):
     car = await db.cars.get_one_or_none(car_id)
     if car is None:
         raise CarNotFoundHTTPException()
+
+    if car.owner_id != owner_id:
+        raise CarPermissionHTTPException()
 
     car = await db.cars.put_update(car_id, data)
     await db.commit()
@@ -58,10 +73,18 @@ async def put_update(db: DBDep, data: CarPut, car_id: int):
 
 
 @router.patch("/{car_id}")
-async def patch_update(db: DBDep, data: CarPatch, car_id: int):
+async def patch_update(
+        db: DBDep,
+        data: CarPatch,
+        car_id: int,
+        owner_id: UserIdDep
+):
     old_car = await db.cars.get_one_or_none(car_id)
     if old_car is None:
         raise CarNotFoundHTTPException()
+
+    if old_car.owner_id != owner_id:
+        raise CarPermissionHTTPException()
 
     car = await db.cars.patch_update(car_id, data)
 
@@ -73,11 +96,18 @@ async def patch_update(db: DBDep, data: CarPatch, car_id: int):
 
 
 @router.delete("/{car_id}")
-async def delete(db: DBDep, car_id: int):
+async def delete(
+        db: DBDep,
+        car_id: int,
+        owner_id: UserIdDep
+):
 
     car_to_delete = await db.cars.get_one_or_none(car_id)
     if car_to_delete is None:
         raise CarNotFoundHTTPException()
+
+    if car_to_delete.owner_id != owner_id:
+        raise CarPermissionHTTPException()
 
     await db.cars.delete(car_id=car_id)
     await db.commit()

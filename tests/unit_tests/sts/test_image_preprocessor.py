@@ -1,8 +1,10 @@
 import pytest
 from PIL import Image
 
+
 from src.exceptions import StsFormatIsNotCorrectHTTPException, StsImageIsDamagedHTTPException
-from src.services.sts.image_preprocessor import check_image, convert_to_grayscale, apply_autocontrast, resize_image, preprocess_image
+from src.services.sts.image_preprocessor import check_image, convert_to_grayscale, apply_autocontrast, \
+    resize_image_to_small, resize_image_to_big, preprocess_image, preprocess_vin_image, crop_vin_label, crop_vin_line
 
 
 @pytest.mark.parametrize(
@@ -86,16 +88,39 @@ def test_apply_autocontrast():
     assert new_image_contrast == (0, 255)
 
 
-def test_resize_image():
+def test_resize_image_to_small():
     image = Image.new("L", (4000, 3000), 120)
     small_image = Image.new("L", (1000, 800), 120)
 
-    resized_image = resize_image(image)
-    resized_small_image = resize_image(small_image)
+    resized_image = resize_image_to_small(image)
+    resized_small_image = resize_image_to_small(small_image) # проверяется, нужно ли уменьшать маленькое изображение
 
     assert image.size == (4000, 3000)
     assert resized_image.size == (2500, 1875)
     assert resized_small_image.size == (1000, 800)
+
+
+def test_resize_image_to_big():
+    image = Image.new("L", (282, 34), 120)
+    big_image = Image.new("L", (1600, 193))
+
+    resized_image = resize_image_to_big(image)
+    resized_big_image = resize_image_to_big(big_image) # проверяется, нужно ли увеличивать больше изображение
+
+    assert image.size == (282, 34)
+    assert resized_image.size == (1600, 193)
+    assert resized_big_image.size == (1600, 193)
+
+
+def test_preprocess_vin_image():
+    new_img = Image.new("RGB", (282, 34), "white")
+    result = preprocess_vin_image(new_img)
+
+    assert new_img.size == (282, 34)
+    assert new_img.mode == "RGB"
+    assert result.size == (1600, 193)
+    assert result.mode == "L"
+
 
 
 def test_preprocess_image(tmp_path):
@@ -110,3 +135,30 @@ def test_preprocess_image(tmp_path):
     assert result.mode == "L"
     assert result.size == (2500, 1875)
     assert result.getextrema() == (0, 255)
+
+
+def test_crop_vin_label():
+    new_img = Image.new("RGB", (200, 300), "white")
+    new_img.putpixel((100, 200), (0, 0, 0))
+
+    left, top, width, height = 100, 200, 60, 25
+    result = crop_vin_label(new_img, (left, top, width, height))
+
+    assert result.size == (60, 25)
+    assert result.getpixel((0, 0)) == (0, 0, 0)
+
+
+def test_crop_vin_line():
+    new_img = Image.new("RGB", (200, 300), "white")
+    left, top, width, height = 100, 200, 60, 25
+
+    result = crop_vin_line(
+        new_img,
+        (left, top, width, height),
+        left_padding=320,
+        right_padding=0,
+        bottom_padding=50
+
+    )
+
+    assert result.size == (160, 50)

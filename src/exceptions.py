@@ -80,3 +80,8 @@ class StsImageIsDamagedHTTPException(CarSalesPlatformHTTPException):
 class StsImageIsNotRecognizedHTTPException(CarSalesPlatformHTTPException):
     status_code = 422
     detail = "VIN-номер не распознан"
+
+
+class CarPermissionHTTPException(CarSalesPlatformHTTPException):
+    status_code = 403
+    detail = "Недостаточно прав доступа для управления автомобилем"

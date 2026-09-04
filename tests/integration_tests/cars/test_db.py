@@ -13,10 +13,11 @@ async def test_car_crud(db):
         color="white",
         country="Japan",
         price=1000000,
-        status="active"
+        status="active",
+
     )
 
-    new_car = await db.cars.add(car_data)
+    new_car = await db.cars.add(car_data, owner_id=1)
 
 
     assert new_car.car_id is not None

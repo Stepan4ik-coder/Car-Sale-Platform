@@ -20,17 +20,20 @@ async def test_get_all_fav_cars(auth_client):
 
 
 async def test_add_new_fav_cars(db: DBManager, auth_client):
-    car = await db.cars.add(CarCreate(
-        vin="1FA6P8CF0H5194382",
-        engine_type="gasoline",
-        litres=3,
-        horse_power=255,
-        year=1986,
-        color="white",
-        country="Japan",
-        price=1000000,
-        status="active",
-    ))
+    car = await db.cars.add(
+        CarCreate(
+            vin="1FA6P8CF0H5194382",
+            engine_type="gasoline",
+            litres=3,
+            horse_power=255,
+            year=1986,
+            color="white",
+            country="Japan",
+            price=1000000,
+            status="active",
+    ),
+        owner_id=1,
+    )
     await db.commit()
 
     response = await auth_client.post("/favorites", json={"car_id": car.car_id})
