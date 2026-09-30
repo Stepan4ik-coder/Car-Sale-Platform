@@ -1,10 +1,10 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import HTTPException
 from pwdlib import PasswordHash
 
 from src.config import settings
+from src.exceptions import AccessTokenDamagedException, AccessTokenExpiredException
 
 
 class AuthService:
@@ -33,4 +33,7 @@ class AuthService:
                 token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
             )
         except jwt.exceptions.DecodeError:
-            raise HTTPException(status_code=401, detail="Неверный токен")
+            raise AccessTokenDamagedException()
+
+        except jwt.exceptions.ExpiredSignatureError:
+            raise AccessTokenExpiredException()

@@ -1,7 +1,7 @@
 import pytest
 
-from src.services.sts.vin_parser import clear_vin, find_vin_candidate
 from src.exceptions import IncorrectStsStringException
+from src.services.sts.vin_parser import clear_vin, find_vin_candidate
 
 
 def test_clear_vin():
@@ -22,12 +22,7 @@ def test_incorrect_vin(vin):
 
 
 def test_find_vin_candidate():
-    data = [
-        "СВИДЕТЕЛЬСТВО",
-        "—_JHDFSi}ELTO0000000",
-        "Люблю мороженое",
-        "Автомашина"
-    ]
+    data = ["СВИДЕТЕЛЬСТВО", "—_JHDFSi}ELTO0000000", "Люблю мороженое", "Автомашина"]
 
     data_dict = {"text": data}
 
@@ -37,12 +32,7 @@ def test_find_vin_candidate():
 
 
 def test_lack_of_vin():
-    data = [
-        "СВИДЕТЕЛЬСТВО",
-        "123",
-        "Люблю мороженое",
-        "Автомашина"
-    ]
+    data = ["СВИДЕТЕЛЬСТВО", "123", "Люблю мороженое", "Автомашина"]
 
     data_dict = {"text": data}
     with pytest.raises(IncorrectStsStringException) as ex:

@@ -1,9 +1,12 @@
-from PIL import Image, UnidentifiedImageError, ImageOps
 import cv2
 import numpy as np
+from PIL import Image, ImageOps, UnidentifiedImageError
 
+from src.exceptions import (
+    StsFormatIsNotCorrectHTTPException,
+    StsImageIsDamagedHTTPException,
+)
 from src.services.sts.config import NEEDED_FORMATS
-from src.exceptions import StsFormatIsNotCorrectHTTPException, StsImageIsDamagedHTTPException
 
 
 def check_format_in_needed_formats(image_format):
@@ -22,7 +25,6 @@ def _open_and_validate(image_path):
             check_format_in_needed_formats(image_format)
 
             return img_copy, image_format
-
 
     except (UnidentifiedImageError, OSError) as error:
         raise StsImageIsDamagedHTTPException() from error
@@ -55,10 +57,7 @@ def process_of_binarization(crop_vin):
     from_img_to_numpy = np.array(final_image)
     # Порог (0) игнорируется, алгоритм сам вычислит нужный
     _, binary_array = cv2.threshold(
-        from_img_to_numpy,
-        0,
-        255,
-        cv2.THRESH_BINARY + cv2.THRESH_OTSU
+        from_img_to_numpy, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
     )
 
     from_numpy_to_img = Image.fromarray(binary_array)
@@ -78,7 +77,9 @@ def resize_image_to_big(image):
     if resized_image.width < 1600:
         coefficient = 1600 / resized_image.width
         new_height = round(resized_image.height * coefficient)
-        new_resized_image = resized_image.resize((1600, new_height), Image.Resampling.LANCZOS)
+        new_resized_image = resized_image.resize(
+            (1600, new_height), Image.Resampling.LANCZOS
+        )
         return new_resized_image
     else:
         return resized_image
@@ -110,7 +111,6 @@ def preprocess_image(path):
 def crop_vin_label(image, vin_coordinates):
     left, top, width, height = vin_coordinates
 
-
     crop_left = left
     crop_top = top
     crop_right = left + width
@@ -122,12 +122,12 @@ def crop_vin_label(image, vin_coordinates):
 
 
 def crop_vin_line(
-        image,
-        vin_coordinates,
-        left_padding=380,
-        right_padding=0,
-        top_offset=10,
-        bottom_padding=40,
+    image,
+    vin_coordinates,
+    left_padding=380,
+    right_padding=0,
+    top_offset=10,
+    bottom_padding=40,
 ):
 
     left, top, width, height = vin_coordinates
@@ -142,7 +142,7 @@ def crop_vin_line(
         max(0, crop_left),
         max(0, crop_top),
         min(image_width, crop_right),
-        min(image_height, crop_bottom)
+        min(image_height, crop_bottom),
     ]
 
     cropped_image = image.crop(new_coordinates)

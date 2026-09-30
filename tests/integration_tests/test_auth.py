@@ -1,4 +1,4 @@
-from src.services.auth import AuthService
+from src.services.auth.auth import AuthService
 
 
 def test_encode_and_decode_access_token():
@@ -7,7 +7,6 @@ def test_encode_and_decode_access_token():
 
     assert jwt_token
     assert isinstance(jwt_token, str)
-
 
     payload = AuthService().decode_token(jwt_token)
     assert payload

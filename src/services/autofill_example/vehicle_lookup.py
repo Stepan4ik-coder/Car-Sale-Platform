@@ -1,5 +1,6 @@
 from src.schemas.cars import CarAutofillResponse
 
+
 def autofill_example(vin: str):
     example_data = CarAutofillResponse(
         vin=vin,
@@ -8,7 +9,7 @@ def autofill_example(vin: str):
         horse_power=97,
         year=1996,
         color="white",
-        country="Japan"
+        country="Japan",
     )
 
     return example_data

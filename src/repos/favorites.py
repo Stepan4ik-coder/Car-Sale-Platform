@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
-from src.models.favorites import FavoritesOrm
 from src.models.cars import CarsOrm
+from src.models.favorites import FavoritesOrm
 from src.models.user import UsersOrm
 from src.repos.base import BaseRepository
 
@@ -23,7 +23,6 @@ class FavoritesRepository(BaseRepository):
 
         return total_result.scalars().all()
 
-
     async def get_favorite(self, user_id: int, car_id: int):
         query = select(self.model).where(
             self.model.user_id == user_id,
@@ -32,7 +31,6 @@ class FavoritesRepository(BaseRepository):
         result = await self.session.execute(query)
 
         return result.scalars().one_or_none()
-
 
     async def get_users_by_car_id(self, car_id: int):
         fav_strings = select(self.model).where(

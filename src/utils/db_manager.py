@@ -1,6 +1,8 @@
-from src.repos.favorites import FavoritesRepository
-from src.repos.user import UsersRepository
 from src.repos.cars import CarsRepository
+from src.repos.chats import ChatsRepository
+from src.repos.favorites import FavoritesRepository
+from src.repos.messages import MessagesRepository
+from src.repos.user import UsersRepository
 
 
 class DBManager:
@@ -13,6 +15,8 @@ class DBManager:
         self.cars = CarsRepository(self.session)
         self.users = UsersRepository(self.session)
         self.favorites = FavoritesRepository(self.session)
+        self.chats = ChatsRepository(self.session)
+        self.messages = MessagesRepository(self.session)
 
         return self
 

@@ -1,4 +1,4 @@
-from src.services.auth import AuthService
+from src.services.auth.auth import AuthService
 
 
 def test_create_access_token():
@@ -7,4 +7,3 @@ def test_create_access_token():
 
     assert jwt_token
     assert isinstance(jwt_token, str)
-

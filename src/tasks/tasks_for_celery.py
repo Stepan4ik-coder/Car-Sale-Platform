@@ -1,10 +1,9 @@
 import asyncio
 
 from src.database import async_session_maker
-
-from src.tasks.celery_app import celery_app
 from src.repos.favorites import FavoritesRepository
-from src.services.send_emails import send_email
+from src.services.notifications.send_emails import send_email
+from src.tasks.celery_app import celery_app
 
 
 async def get_subscribers(car_id):

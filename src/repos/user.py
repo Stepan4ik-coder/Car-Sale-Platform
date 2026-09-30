@@ -15,7 +15,7 @@ class UsersRepository(BaseRepository):
         result = await self.session.execute(query)
         user = result.scalars().one_or_none()
         if not user:
-            raise ObjectNotFoundException
+            raise ObjectNotFoundException()
 
         return user
 
@@ -24,7 +24,7 @@ class UsersRepository(BaseRepository):
         result = await self.session.execute(query)
         user = result.scalars().one_or_none()
         if not user:
-            raise ObjectNotFoundException
+            raise ObjectNotFoundException()
         return user
 
     async def get_user_with_hashed_password(self, email: str):
@@ -32,6 +32,6 @@ class UsersRepository(BaseRepository):
         result = await self.session.execute(query)
         model = result.scalars().one_or_none()
         if not model:
-            raise ObjectNotFoundException
+            raise ObjectNotFoundException()
 
         return UserWithHashedPassword.model_validate(model)

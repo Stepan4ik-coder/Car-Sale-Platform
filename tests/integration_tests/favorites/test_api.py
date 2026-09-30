@@ -6,10 +6,13 @@ from src.utils.db_manager import DBManager
 
 @pytest.fixture
 async def auth_client(ac):
-    await ac.post("/auth/login", json={
-        "email": "lays@pring.com",
-        "password": "123456789",
-    })
+    await ac.post(
+        "/auth/login",
+        json={
+            "email": "lays@pring.com",
+            "password": "123456789",
+        },
+    )
     return ac  # cookie уже в клиенте
 
 
@@ -31,7 +34,7 @@ async def test_add_new_fav_cars(db: DBManager, auth_client):
             country="Japan",
             price=1000000,
             status="active",
-    ),
+        ),
         owner_id=1,
     )
     await db.commit()

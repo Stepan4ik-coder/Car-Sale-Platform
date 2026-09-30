@@ -1,15 +1,25 @@
 import pytest
 from PIL import Image
 
-
-from src.exceptions import StsFormatIsNotCorrectHTTPException, StsImageIsDamagedHTTPException
-from src.services.sts.image_preprocessor import check_image, convert_to_grayscale, apply_autocontrast, \
-    resize_image_to_small, resize_image_to_big, preprocess_image, preprocess_vin_image, crop_vin_label, crop_vin_line
+from src.exceptions import (
+    StsFormatIsNotCorrectHTTPException,
+    StsImageIsDamagedHTTPException,
+)
+from src.services.sts.image_preprocessor import (
+    apply_autocontrast,
+    check_image,
+    convert_to_grayscale,
+    crop_vin_label,
+    crop_vin_line,
+    preprocess_image,
+    preprocess_vin_image,
+    resize_image_to_big,
+    resize_image_to_small,
+)
 
 
 @pytest.mark.parametrize(
-    ("image_format", "extension"),
-    [("JPEG", "jpg"), ("PNG", "png")]
+    ("image_format", "extension"), [("JPEG", "jpg"), ("PNG", "png")]
 )
 def test_jpeg_and_png_format(tmp_path, image_format, extension):
     image_path = tmp_path / f"test.{extension}"
@@ -42,16 +52,11 @@ def test_damaged_image(tmp_path):
 
 
 @pytest.mark.parametrize(
-    ("image_format", "extension"),
-    [("JPEG", "jpg"), ("PNG", "png")]
+    ("image_format", "extension"), [("JPEG", "jpg"), ("PNG", "png")]
 )
 def test_grayscale(tmp_path, image_format, extension):
     image_path = tmp_path / f"test.{extension}"
-    (Image.new("RGB", (100, 100), "white")
-     .save(
-        image_path,
-        format=image_format
-    ))
+    (Image.new("RGB", (100, 100), "white").save(image_path, format=image_format))
 
     width, height, grayscale_image = convert_to_grayscale(image_path)
 
@@ -93,7 +98,9 @@ def test_resize_image_to_small():
     small_image = Image.new("L", (1000, 800), 120)
 
     resized_image = resize_image_to_small(image)
-    resized_small_image = resize_image_to_small(small_image) # проверяется, нужно ли уменьшать маленькое изображение
+    resized_small_image = resize_image_to_small(
+        small_image
+    )  # проверяется, нужно ли уменьшать маленькое изображение
 
     assert image.size == (4000, 3000)
     assert resized_image.size == (2500, 1875)
@@ -105,7 +112,9 @@ def test_resize_image_to_big():
     big_image = Image.new("L", (1600, 193))
 
     resized_image = resize_image_to_big(image)
-    resized_big_image = resize_image_to_big(big_image) # проверяется, нужно ли увеличивать больше изображение
+    resized_big_image = resize_image_to_big(
+        big_image
+    )  # проверяется, нужно ли увеличивать больше изображение
 
     assert image.size == (282, 34)
     assert resized_image.size == (1600, 193)
@@ -120,7 +129,6 @@ def test_preprocess_vin_image():
     assert new_img.mode == "RGB"
     assert result.size == (1600, 193)
     assert result.mode == "L"
-
 
 
 def test_preprocess_image(tmp_path):
@@ -157,8 +165,8 @@ def test_crop_vin_line():
         (left, top, width, height),
         left_padding=320,
         right_padding=0,
-        bottom_padding=50
-
+        top_offset=10,
+        bottom_padding=50,
     )
 
-    assert result.size == (160, 50)
+    assert result.size == (160, 40)

@@ -1,5 +1,6 @@
 from typing import Literal
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CarCreate(BaseModel):
@@ -26,10 +27,7 @@ class CarAutofillResponse(BaseModel):
 
 
 class CarPatch(BaseModel):
-    vin: str | None = Field(
-        default=None,
-        pattern=r"^[A-HJ-NPR-Z0-9]{17}$"
-    )
+    vin: str | None = Field(default=None, pattern=r"^[A-HJ-NPR-Z0-9]{17}$")
     engine_type: Literal["gasoline", "diesel", "electric", "hybrid"] | None = None
     litres: int | None = Field(default=None, ge=1, le=10)
     horse_power: int | None = Field(default=None, gt=0, le=2000)

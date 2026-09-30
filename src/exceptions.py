@@ -28,6 +28,18 @@ class IncorrectStsStringException(CarSalesPlatformException):
     detail = "Невалидные данные СТС"
 
 
+class AccessTokenExpiredException(CarSalesPlatformException):
+    detail = "Токен доступа просрочен"
+
+
+class AccessTokenDamagedException(CarSalesPlatformException):
+    detail = "Токен доступа повреждён"
+
+
+class PermissionException(CarSalesPlatformException):
+    detail = "Недостаточно прав доступа"
+
+
 # HTTPException
 class CarSalesPlatformHTTPException(HTTPException):
     status_code = 500
@@ -47,6 +59,11 @@ class UserAlreadyExistsHTTPException(CarSalesPlatformHTTPException):
     detail = "Пользователь уже существует"
 
 
+class DontMessageWithYourselfHTTPException(CarSalesPlatformHTTPException):
+    status_code = 409
+    detail = "Нельзя писать самому себе"
+
+
 class CarAlreadyExistsHTTPException(CarSalesPlatformHTTPException):
     status_code = 409
     detail = "Автомобиль уже существует"
@@ -55,6 +72,11 @@ class CarAlreadyExistsHTTPException(CarSalesPlatformHTTPException):
 class CarNotFoundHTTPException(CarSalesPlatformHTTPException):
     status_code = 404
     detail = "Автомобиль не найден"
+
+
+class ChatNotFoundHTTPException(CarSalesPlatformHTTPException):
+    status_code = 404
+    detail = "Чат не найден"
 
 
 class FavoriteAlreadyExistsHTTPException(CarSalesPlatformHTTPException):
@@ -85,3 +107,23 @@ class StsImageIsNotRecognizedHTTPException(CarSalesPlatformHTTPException):
 class CarPermissionHTTPException(CarSalesPlatformHTTPException):
     status_code = 403
     detail = "Недостаточно прав доступа для управления автомобилем"
+
+
+class ChatPermissionHTTPException(CarSalesPlatformHTTPException):
+    status_code = 403
+    detail = "Недостаточно прав доступа для вхождения в чат"
+
+
+class AccessTokenExpiredHTTPException(CarSalesPlatformHTTPException):
+    detail = "Токен доступа просрочен"
+    status_code = 401
+
+
+class AccessTokenDamagedHTTPException(CarSalesPlatformHTTPException):
+    detail = "Токен доступа повреждён"
+    status_code = 401
+
+
+class AccessTokenNotProvidedHTTPException(CarSalesPlatformHTTPException):
+    detail = "Токен доступа не предоставлен"
+    status_code = 401

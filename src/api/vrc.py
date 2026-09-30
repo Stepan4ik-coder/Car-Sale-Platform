@@ -1,20 +1,25 @@
-from fastapi import APIRouter, UploadFile
 import os
 import tempfile
 
-from src.services.sts.ocr import recognize_vin
-from src.services.vehicle_lookup import autofill_example
-from src.exceptions import IncorrectStsStringException, StsImageIsNotRecognizedHTTPException
-from src.schemas.vrc import VrcRecognizeResponse, CarVinRequest
-from src.schemas.cars import CarAutofillResponse
+from fastapi import APIRouter, UploadFile
 
-router = APIRouter(prefix="/vrc", tags=["Действия со свидетельством о регистрации ТС (СТС)"])
+from src.exceptions import (
+    IncorrectStsStringException,
+    StsImageIsNotRecognizedHTTPException,
+)
+from src.schemas.cars import CarAutofillResponse
+from src.schemas.vrc import CarVinRequest, VrcRecognizeResponse
+from src.services.autofill_example.vehicle_lookup import autofill_example
+from src.services.sts.ocr import recognize_vin
+
+router = APIRouter(
+    prefix="/vrc", tags=["Действия со свидетельством о регистрации ТС (СТС)"]
+)
 
 
 @router.post("", response_model=VrcRecognizeResponse)
 async def recognize_vrc(
-        vin_file: UploadFile,
-
+    vin_file: UploadFile,
 ):
     vin_file_bytes = await vin_file.read()
     temp_file = tempfile.NamedTemporaryFile(prefix="vrc_", suffix=".jpg", delete=False)
@@ -38,5 +43,3 @@ def example_to_autofill(data: CarVinRequest):
     data_to_autofill = autofill_example(data.vin)
 
     return data_to_autofill
-
-

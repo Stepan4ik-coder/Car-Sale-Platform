@@ -13,10 +13,15 @@ services:
       - my_network
     env_file:
       - ".env"
+    environment:
+      DB_HOST: car_sale_postgres_service
+      REDIS_HOST: car_sale_cache_service
 
 
   car_sale_postgres_service:
     image: postgres:16
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
@@ -26,6 +31,8 @@ services:
 
   car_sale_cache_service:
     image: redis:7
+    ports:
+      - "6379:6379"
     networks: [my_network]
 
 
@@ -38,6 +45,9 @@ services:
       - my_network
     env_file:
       - ".env"
+    environment:
+      DB_HOST: car_sale_postgres_service
+      REDIS_HOST: car_sale_cache_service
     command: celery --app=src.tasks.celery_app:celery_app worker -l INFO
 
 

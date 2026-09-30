@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Чат — запись</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 10px;
+    }
+    .role {
+      flex: 0 0 auto;
+      font-size: clamp(40px, 8vw, 84px);
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-align: center;
+      padding: 12px;
+      background: #ffe500;
+      color: #000;
+    }
+    .role.seller {
+      background: #00e5ff;
+    }
+    .status {
+      flex: 0 0 auto;
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 900;
+      text-align: center;
+      padding: 10px;
+      border: 6px solid #ff3b30;
+      background: #3a0000;
+      color: #ff8a80;
+    }
+    .status.ok {
+      border-color: #00e676;
+      background: #003318;
+      color: #69f0ae;
+    }
+    .status.room {
+      border-color: #ffe500;
+      background: #332800;
+      color: #ffe500;
+    }
+    .who {
+      flex: 0 0 auto;
+      font-size: clamp(22px, 3.5vw, 36px);
+      font-weight: 800;
+      text-align: center;
+      min-height: 1.2em;
+    }
+    .controls {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .controls.login-hidden .login-only {
+      display: none;
+    }
+    .controls.join-hidden .join-only {
+      display: none;
+    }
+    .controls.room-hidden {
+      display: none;
+    }
+    label {
+      display: block;
+      font-size: clamp(16px, 2vw, 22px);
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: #ffe500;
+    }
+    .span-2 { grid-column: 1 / -1; }
+    input, button {
+      width: 100%;
+      font: inherit;
+      font-size: clamp(20px, 2.6vw, 28px);
+      font-weight: 800;
+      border-radius: 8px;
+    }
+    input {
+      padding: 12px;
+      border: 4px solid #fff;
+      background: #111;
+      color: #fff;
+    }
+    input::placeholder { color: #777; }
+    button {
+      padding: 14px 10px;
+      border: 4px solid #fff;
+      background: #fff;
+      color: #000;
+      cursor: pointer;
+    }
+    button.ghost {
+      background: #111;
+      color: #fff;
+    }
+    button.ghost.on {
+      background: #ffe500;
+      color: #000;
+      border-color: #ffe500;
+    }
+    button.ghost.on.seller {
+      background: #00e5ff;
+      color: #000;
+      border-color: #00e5ff;
+    }
+    #messages {
+      flex: 1 1 auto;
+      min-height: 180px;
+      overflow: auto;
+      padding: 12px;
+      border: 6px solid #fff;
+      background: #111;
+    }
+    .empty {
+      color: #888;
+      font-size: clamp(24px, 4vw, 40px);
+      font-weight: 800;
+      text-align: center;
+      padding: 40px 8px;
+    }
+    .msg {
+      margin: 10px 0;
+      padding: 14px 16px;
+      border: 4px solid #fff;
+      background: #1a1a1a;
+      font-size: clamp(28px, 4.5vw, 48px);
+      font-weight: 900;
+      word-break: break-word;
+    }
+    .msg.mine {
+      background: #ffe500;
+      color: #000;
+      border-color: #ffe500;
+    }
+    .msg.theirs {
+      background: #fff;
+      color: #000;
+    }
+    .msg .from {
+      display: block;
+      font-size: 0.45em;
+      margin-bottom: 4px;
+      opacity: 0.75;
+    }
+    .flash {
+      animation: flash 0.8s ease;
+    }
+    @keyframes flash {
+      0% { outline: 10px solid #ffe500; transform: scale(1.02); }
+      100% { outline: 0 solid #ffe500; transform: scale(1); }
+    }
+    .composer {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+    .composer button {
+      min-width: 160px;
+    }
+    #log {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="role" class="role">ПОКУПАТЕЛЬ</div>
+  <div id="status" class="status">НЕ ВОШЁЛ</div>
+  <div id="who" class="who"></div>
+
+  <div id="controls" class="controls">
+    <button type="button" id="as-buyer" class="ghost on">Покупатель</button>
+    <button type="button" id="as-seller" class="ghost">Продавец</button>
+
+    <div class="span-2 login-only">
+      <label for="email">Почта</label>
+      <input id="email" placeholder="email" autocomplete="username">
+    </div>
+    <div class="span-2 login-only">
+      <label for="password">Пароль</label>
+      <input id="password" type="password" placeholder="пароль" autocomplete="current-password">
+    </div>
+    <button type="button" id="login" class="span-2 login-only">ВОЙТИ</button>
+
+    <div class="span-2 join-only">
+      <label for="chat-id">Номер чата</label>
+      <input id="chat-id" placeholder="например 1" type="number">
+    </div>
+    <button type="button" id="join" class="span-2 join-only">ВОЙТИ В КОМНАТУ</button>
+  </div>
+
+  <div id="messages"><div class="empty">Сообщений пока нет</div></div>
+
+  <div class="composer">
+    <input id="text" placeholder="напиши текст">
+    <button type="button" id="send">ОТПРАВИТЬ</button>
+  </div>
+  <div id="log"></div>
+
+  <script>
+    const logBox = document.getElementById("log");
+    const messagesBox = document.getElementById("messages");
+    const roleBox = document.getElementById("role");
+    const statusBox = document.getElementById("status");
+    const controls = document.getElementById("controls");
+    const buyerBtn = document.getElementById("as-buyer");
+    const sellerBtn = document.getElementById("as-seller");
+    let myId = null;
+    let role = "buyer";
+    let socket = null;
+
+    function log(line) {
+      logBox.textContent += line + "\n";
+    }
+
+    function setStatus(text, kind) {
+      statusBox.textContent = text;
+      statusBox.className = "status" + (kind ? " " + kind : "");
+    }
+
+    function setRole(next) {
+      role = next;
+      const seller = next === "seller";
+      roleBox.textContent = seller ? "ПРОДАВЕЦ" : "ПОКУПАТЕЛЬ";
+      roleBox.className = "role" + (seller ? " seller" : "");
+      buyerBtn.className = "ghost" + (seller ? "" : " on");
+      sellerBtn.className = "ghost" + (seller ? " on seller" : "");
+    }
+
+    function addMessage(message) {
+      const empty = messagesBox.querySelector(".empty");
+      if (empty) empty.remove();
+      const row = document.createElement("div");
+      const mine = myId !== null && Number(message.author_id) === Number(myId);
+      row.className = "msg flash " + (mine ? "mine" : "theirs");
+      const from = document.createElement("span");
+      from.className = "from";
+      from.textContent = mine ? "Я" : "Собеседник";
+      row.appendChild(from);
+      row.appendChild(document.createTextNode(message.text));
+      messagesBox.appendChild(row);
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    buyerBtn.onclick = () => setRole("buyer");
+    sellerBtn.onclick = () => setRole("seller");
+
+    document.getElementById("login").onclick = async () => {
+      const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value,
+        }),
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        setStatus("ВХОД НЕ УДАЛСЯ", "");
+        log("Вход не удался: " + JSON.stringify(body));
+        return;
+      }
+
+      const me = await fetch("/auth/get_me", { credentials: "include" });
+      const meBody = await me.json();
+      myId = meBody.id;
+      document.getElementById("who").textContent = "Пользователь " + meBody.id;
+      controls.classList.add("login-hidden");
+      setStatus("ВОШЁЛ", "ok");
+      log("Вход выполнен");
+
+      if (socket) socket.disconnect();
+      socket = io({ withCredentials: true });
+      socket.on("connect", () => log("Socket подключён"));
+      socket.on("connect_error", (error) => log("Ошибка сокета: " + error.message));
+      socket.on("new_message", addMessage);
+    };
+
+    document.getElementById("join").onclick = () => {
+      if (!socket) {
+        setStatus("СНАЧАЛА ВОЙДИ", "");
+        return;
+      }
+      const chatId = Number(document.getElementById("chat-id").value);
+      socket.emit("join_room", { chat_id: chatId });
+      controls.classList.add("join-hidden", "room-hidden");
+      setStatus("В КОМНАТЕ " + chatId, "room");
+      log("join_room chat_id=" + chatId);
+    };
+
+    document.getElementById("send").onclick = () => {
+      if (!socket) {
+        setStatus("СНАЧАЛА ВОЙДИ", "");
+        return;
+      }
+      const chatId = Number(document.getElementById("chat-id").value);
+      const text = document.getElementById("text").value;
+      if (!text) return;
+      socket.emit("send_message", { chat_id: chatId, text: text });
+      document.getElementById("text").value = "";
+    };
+  </script>
+</body>
+</html>

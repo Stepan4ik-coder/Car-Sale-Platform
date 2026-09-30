@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Демо чата</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 24px auto; }
+    section { border: 1px solid #ccc; padding: 12px; margin-bottom: 12px; }
+    input, button { margin: 4px 0; padding: 6px; }
+    #messages { min-height: 160px; background: #f6f6f6; padding: 8px; }
+    #log { white-space: pre-wrap; color: #666; font-size: 12px; }
+    .msg { margin: 6px 0; }
+    .meta { color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Демо чата</h1>
+
+  <section>
+    <h2>1. Вход</h2>
+    <input id="email" placeholder="email" size="30">
+    <input id="password" type="password" placeholder="пароль">
+    <button id="login">Войти</button>
+    <div id="who"></div>
+  </section>
+
+  <section>
+    <h2>2. Комната</h2>
+    <input id="chat-id" placeholder="номер чата" type="number">
+    <button id="join">Войти в комнату</button>
+  </section>
+
+  <section>
+    <h2>3. Сообщения</h2>
+    <input id="text" placeholder="текст" size="40">
+    <button id="send">Отправить</button>
+    <div id="messages"></div>
+    <p class="meta">Служебное:</p>
+    <div id="log"></div>
+  </section>
+
+  <script>
+    const logBox = document.getElementById("log");
+    const messagesBox = document.getElementById("messages");
+    function log(line) {
+      logBox.textContent += line + "\n";
+    }
+    function addMessage(message) {
+      const row = document.createElement("div");
+      row.className = "msg";
+      const time = (message.created_at || "").replace("T", " ").slice(0, 19);
+      row.textContent = "Пользователь " + message.author_id + ": " + message.text;
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = time;
+      row.appendChild(meta);
+      messagesBox.appendChild(row);
+    }
+
+    let socket = null;
+
+    document.getElementById("login").onclick = async () => {
+      const response = await fetch("/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          email: document.getElementById("email").value,
+          password: document.getElementById("password").value,
+        }),
+      });
+      const body = await response.json();
+      log(response.ok ? "Вход выполнен" : "Вход не удался: " + JSON.stringify(body));
+      if (!response.ok) {
+        document.getElementById("who").textContent = "Вход не удался";
+        return;
+      }
+
+      const me = await fetch("/auth/get_me", { credentials: "include" });
+      const meBody = await me.json();
+      document.getElementById("who").textContent =
+        "Вы: пользователь " + meBody.id + " (" + meBody.email + ")";
+
+      if (socket) socket.disconnect();
+      socket = io({ withCredentials: true });
+      socket.on("connect", () => log("Socket подключён"));
+      socket.on("connect_error", (error) => log("Ошибка сокета: " + error.message));
+      socket.on("new_message", addMessage);
+    };
+
+    document.getElementById("join").onclick = () => {
+      const chatId = Number(document.getElementById("chat-id").value);
+      socket.emit("join_room", { chat_id: chatId });
+      log("join_room chat_id=" + chatId);
+    };
+
+    document.getElementById("send").onclick = () => {
+      const chatId = Number(document.getElementById("chat-id").value);
+      const text = document.getElementById("text").value;
+      socket.emit("send_message", { chat_id: chatId, text: text });
+      document.getElementById("text").value = "";
+    };
+  </script>
+</body>
+</html>

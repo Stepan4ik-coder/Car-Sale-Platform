@@ -2,11 +2,13 @@ import numpy as np
 import pytesseract
 
 from src.exceptions import IncorrectStsStringException
-from src.services.sts.image_preprocessor import preprocess_image, crop_vin_line, preprocess_vin_image
+from src.services.sts.image_preprocessor import (
+    crop_vin_line,
+    preprocess_image,
+    preprocess_vin_image,
+)
+from src.services.sts.paddle_engine import lazy_eng_reader, lazy_rus_reader
 from src.services.sts.vin_parser import clear_vin
-from src.services.sts.paddle_engine import lazy_rus_reader, lazy_eng_reader
-
-
 
 
 def recognize_sts(image_path) -> str:
@@ -18,10 +20,7 @@ def recognize_sts(image_path) -> str:
 
 
 def recognize_text(processed_image) -> str:
-    text = pytesseract.image_to_string(
-        processed_image,
-        lang="rus+eng"
-    )
+    text = pytesseract.image_to_string(processed_image, lang="rus+eng")
 
     return text.strip()
 
@@ -30,10 +29,7 @@ def recognize_data(image, config=""):
     # Получаем не только текст, но и confidence и координаты каждого фрагмента.
     # Output.DICT возвращает эти данные в виде удобного Python-словаря.
     data = pytesseract.image_to_data(
-        image,
-        lang="rus+eng",
-        config=config,
-        output_type=pytesseract.Output.DICT
+        image, lang="rus+eng", config=config, output_type=pytesseract.Output.DICT
     )
 
     return data
@@ -50,11 +46,9 @@ def recognize_paddle_data(image, reader):
 
     for result in results:
         rec_texts = result["rec_texts"]
-        rec_scores = result["rec_scores"]
         rec_boxes = result["rec_boxes"]
 
         for index, text in enumerate(rec_texts):
-            score = rec_scores[index]
             box = rec_boxes[index]
             left, top, right, bottom = box
 
@@ -67,13 +61,12 @@ def recognize_paddle_data(image, reader):
             widths.append(width)
             heights.append(height)
 
-
     return {
         "text": texts,
         "left": lefts,
         "top": tops,
         "width": widths,
-        "height": heights
+        "height": heights,
     }
 
 
@@ -97,10 +90,8 @@ def recognize_vin_line(image):
     vin_text = pytesseract.image_to_string(
         image,
         lang="eng",
-        config=(
-            "--psm 7 "
-            "-c tessedit_char_whitelist=ABCDEFGHJKLMNPRSTUVWXYZ0123456789"
-    ))
+        config=("--psm 7 -c tessedit_char_whitelist=ABCDEFGHJKLMNPRSTUVWXYZ0123456789"),
+    )
 
     return vin_text.strip()
 

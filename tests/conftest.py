@@ -1,15 +1,20 @@
+from unittest import mock
+
 import pytest
 from httpx import ASGITransport, AsyncClient
-from unittest import mock
 
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
-from src.api.dependencies import get_db
-from src.config import settings
-from src.database import Base, engine_null_pool, async_session_maker_null_pool
-from src.main import app
-from src.models import * # noqa: F403
-from src.utils.db_manager import DBManager
+from src.api.dependencies import get_db  # noqa: E402
+from src.config import settings  # noqa: E402
+from src.database import (  # noqa: E402
+    Base,
+    async_session_maker_null_pool,
+    engine_null_pool,
+)
+from src.main import fastapi_app  # noqa: E402
+from src.models import *  # noqa: E402, F403
+from src.utils.db_manager import DBManager  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -27,7 +32,9 @@ async def get_db_null_pool():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
 
-app.dependency_overrides[get_db] = get_db_null_pool
+
+fastapi_app.dependency_overrides[get_db] = get_db_null_pool
+
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_mode):
@@ -38,7 +45,9 @@ async def setup_database(check_mode):
 
 @pytest.fixture(scope="session")
 async def ac() -> AsyncClient:
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=fastapi_app), base_url="http://test"
+    ) as ac:
         yield ac
 
 
@@ -51,21 +60,15 @@ async def register_user(ac, setup_database):
             "password": "123456789",
             "first_name": "Oleg",
             "last_name": "Petrov",
-            "phone_number": "89097651212"
-
-        }
+            "phone_number": "89097651212",
+        },
     )
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def authenticated_ac(register_user, ac):
     await ac.post(
-        "/auth/login",
-        json={
-            "email": "lays@pring.com",
-            "password": "123456789"
-        }
+        "/auth/login", json={"email": "lays@pring.com", "password": "123456789"}
     )
 
     assert ac.cookies["access_token"]
-

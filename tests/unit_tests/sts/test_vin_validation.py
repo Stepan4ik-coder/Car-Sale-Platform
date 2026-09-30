@@ -14,7 +14,7 @@ def test_correct_vin():
         color="white",
         country="Japan",
         price=1000000,
-        status="active"
+        status="active",
     )
 
     assert new_car.vin == "JA3BB51E9JU024751"
@@ -31,7 +31,7 @@ def test_incorrect_vin():
             color="white",
             country="Japan",
             price=1000000,
-            status="active"
+            status="active",
         )
 
     assert ex.value.errors()[0]["loc"] == ("vin",)
@@ -48,7 +48,7 @@ def test_incorrect_symbols_in_vin():
             color="white",
             country="Japan",
             price=1000000,
-            status="active"
+            status="active",
         )
 
     assert ex.value.errors()[0]["loc"] == ("vin",)

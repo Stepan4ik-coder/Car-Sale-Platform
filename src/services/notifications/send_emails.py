@@ -4,7 +4,6 @@ from email.mime.text import MIMEText
 
 from src.config import settings
 
-
 # Настройки почты
 sender_email = settings.SMTP_USER  # Ваша почта
 sender_password = settings.SMTP_PASS  # Пароль приложения

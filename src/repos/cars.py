@@ -1,5 +1,5 @@
-from sqlalchemy import select, insert
 from pydantic import BaseModel
+from sqlalchemy import insert, select
 
 from src.models.cars import CarsOrm
 from src.repos.base import BaseRepository
@@ -40,7 +40,6 @@ class CarsRepository(BaseRepository):
         result = await self.session.execute(query)
 
         return result.scalars().all()
-
 
     async def add(self, data: BaseModel, owner_id: int | None = None):
         new_car_data = data.model_dump()

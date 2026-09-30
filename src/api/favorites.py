@@ -1,8 +1,12 @@
 from fastapi import APIRouter
 
 from src.api.dependencies import DBDep, UserIdDep
-from src.exceptions import CarNotFoundHTTPException, FavoriteAlreadyExistsHTTPException, FavoriteNotFoundHTTPException
-from src.schemas.favorites import CreateFavorite, AddFavorite
+from src.exceptions import (
+    CarNotFoundHTTPException,
+    FavoriteAlreadyExistsHTTPException,
+    FavoriteNotFoundHTTPException,
+)
+from src.schemas.favorites import AddFavorite, CreateFavorite
 
 router = APIRouter(
     prefix="/favorites",
@@ -22,15 +26,15 @@ async def get_all_fav_cars(db: DBDep, user_id: UserIdDep):
 
 @router.post("")
 async def add_new_fav_cars(db: DBDep, user_id: UserIdDep, data: AddFavorite):
-    car = await db.cars.get_one_or_none(data.car_id)
+    car = await db.cars.get_one_or_none(car_id=data.car_id)
     if not car:
-        raise CarNotFoundHTTPException
+        raise CarNotFoundHTTPException()
 
     existing_favorite = await db.favorites.get_favorite(
         user_id=user_id, car_id=data.car_id
     )
     if existing_favorite:
-        raise FavoriteAlreadyExistsHTTPException
+        raise FavoriteAlreadyExistsHTTPException()
 
     add_stmt = CreateFavorite(car_id=data.car_id, user_id=user_id)
     result = await db.favorites.add(add_stmt)
@@ -40,14 +44,10 @@ async def add_new_fav_cars(db: DBDep, user_id: UserIdDep, data: AddFavorite):
 
 
 @router.delete("/{car_id}")
-async def delete_fav_cars(
-        db: DBDep,
-        user_id: UserIdDep,
-        car_id: int
-):
+async def delete_fav_cars(db: DBDep, user_id: UserIdDep, car_id: int):
     fav_to_del = await db.favorites.get_favorite(car_id=car_id, user_id=user_id)
     if not fav_to_del:
-        raise FavoriteNotFoundHTTPException
+        raise FavoriteNotFoundHTTPException()
 
     await db.favorites.delete(user_id=user_id, car_id=car_id)
     await db.commit()

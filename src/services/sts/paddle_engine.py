@@ -3,8 +3,10 @@ from paddleocr import PaddleOCR, TextRecognition
 
 class LazyRusPaddleOCR:
     def __init__(self, **kwargs):
-        self._kwargs = kwargs # Запоминает настройки модели, переданные при создании LazyPaddleOCR
-        self._ocr = None # Пока настоящей PaddleOCR-модели нет в памяти.
+        self._kwargs = (
+            kwargs  # Запоминает настройки модели, переданные при создании LazyPaddleOCR
+        )
+        self._ocr = None  # Пока настоящей PaddleOCR-модели нет в памяти.
 
     @property
     def ocr(self):
@@ -21,8 +23,10 @@ class LazyRusPaddleOCR:
 
 class LazyEngPaddleOCR:
     def __init__(self, **kwargs):
-        self._kwargs = kwargs # Запоминает настройки модели, переданные при создании LazyPaddleOCR
-        self._ocr = None # Пока настоящей PaddleOCR-модели нет в памяти.
+        self._kwargs = (
+            kwargs  # Запоминает настройки модели, переданные при создании LazyPaddleOCR
+        )
+        self._ocr = None  # Пока настоящей PaddleOCR-модели нет в памяти.
 
     @property
     def ocr(self):
@@ -41,11 +45,7 @@ class LazyEngPaddleOCR:
 # При создании объекта класса модели НЕ загружаются в память
 lazy_rus_reader = LazyRusPaddleOCR(
     text_detection_model_name="PP-OCRv5_mobile_det",
-    text_recognition_model_name="cyrillic_PP-OCRv5_mobile_rec"
+    text_recognition_model_name="cyrillic_PP-OCRv5_mobile_rec",
 )
 
-lazy_eng_reader = LazyEngPaddleOCR(
-    model_name="en_PP-OCRv5_mobile_rec"
-)
-
-
+lazy_eng_reader = LazyEngPaddleOCR(model_name="en_PP-OCRv5_mobile_rec")

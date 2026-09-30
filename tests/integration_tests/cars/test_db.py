@@ -1,7 +1,6 @@
 from src.schemas.cars import CarCreate
 
 
-
 async def test_car_crud(db):
     # Добавление авто
     car_data = CarCreate(
@@ -14,18 +13,16 @@ async def test_car_crud(db):
         country="Japan",
         price=1000000,
         status="active",
-
     )
 
     new_car = await db.cars.add(car_data, owner_id=1)
-
 
     assert new_car.car_id is not None
     assert new_car.engine_type == "gasoline"
     assert new_car.status == "active"
 
     # Получение существующего авто
-    existing_car = await db.cars.get_one_or_none(new_car.car_id)
+    existing_car = await db.cars.get_one_or_none(car_id=new_car.car_id)
     assert existing_car is not None
     assert existing_car.car_id == new_car.car_id
 
@@ -33,7 +30,7 @@ async def test_car_crud(db):
     update_litres = 2
     update_year = 1987
     update_color = "black"
-    update_price =400000
+    update_price = 400000
     update_car_data = CarCreate(
         vin="JA3BB51E9JU024751",
         engine_type="gasoline",
@@ -43,7 +40,7 @@ async def test_car_crud(db):
         color=update_color,
         country="Japan",
         price=update_price,
-        status="active"
+        status="active",
     )
 
     updated_car = await db.cars.put_update(new_car.car_id, update_car_data)
@@ -56,5 +53,5 @@ async def test_car_crud(db):
 
     # Удаление
     await db.cars.delete(car_id=existing_car.car_id)
-    car = await db.cars.get_one_or_none(existing_car.car_id)
+    car = await db.cars.get_one_or_none(car_id=existing_car.car_id)
     assert car is None
